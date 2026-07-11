@@ -1,0 +1,364 @@
+.inventory-shortages-page {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+.inventory-shortages-header h1 {
+    margin: 0;
+    font-size: 2rem;
+}
+
+.inventory-shortages-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--primary, #2563eb);
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.inventory-shortages-eyebrow {
+    margin: 12px 0 6px;
+    color: var(--primary, #2563eb);
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.inventory-shortages-description {
+    margin: 8px 0 0;
+    color: var(--text-muted, #64748b);
+}
+
+.inventory-shortages-stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.inventory-shortages-stat {
+    padding: 18px;
+    border: 1px solid var(--border-color, #e2e8f0);
+    border-radius: 18px;
+    background: var(--surface, #fff);
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
+}
+
+.inventory-shortages-stat span {
+    display: block;
+    color: var(--text-muted, #64748b);
+    font-size: 0.82rem;
+}
+
+.inventory-shortages-stat strong {
+    display: block;
+    margin-top: 8px;
+    font-size: 1.55rem;
+}
+
+.inventory-shortages-filters {
+    display: grid;
+    grid-template-columns:
+        minmax(260px, 2fr)
+        repeat(4, minmax(150px, 1fr))
+        auto;
+    gap: 14px;
+    align-items: end;
+    padding: 18px;
+    border: 1px solid var(--border-color, #e2e8f0);
+    border-radius: 18px;
+    background: var(--surface, #fff);
+}
+
+.inventory-shortages-filters .form-group {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.inventory-shortages-filters label {
+    font-weight: 700;
+}
+
+.inventory-shortages-filters input,
+.inventory-shortages-filters select {
+    width: 100%;
+    height: 44px;
+    min-width: 0;
+    padding: 0 12px;
+    border: 1px solid var(--border-color, #cbd5e1);
+    border-radius: 12px;
+    background: var(--surface, #fff);
+    color: var(--text-color, #0f172a);
+    font: inherit;
+    outline: none;
+}
+
+.inventory-shortages-filter-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.inventory-shortages-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 14px 16px;
+    border: 1px solid var(--border-color, #e2e8f0);
+    border-radius: 14px;
+    background: #f8fafc;
+}
+
+.inventory-shortages-loading,
+.inventory-shortages-empty {
+    padding: 42px 20px;
+    color: var(--text-muted, #64748b);
+    text-align: center;
+}
+
+.inventory-shortages-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.inventory-shortages-spinner {
+    width: 20px;
+    height: 20px;
+    display: inline-block;
+    border: 3px solid rgba(37, 99, 235, 0.18);
+    border-top-color: var(--primary, #2563eb);
+    border-radius: 50%;
+    animation: inventory-shortages-spin 0.75s linear infinite;
+}
+
+@keyframes inventory-shortages-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.inventory-shortages-loading[hidden],
+.inventory-shortages-empty[hidden],
+.inventory-shortages-items[hidden] {
+    display: none !important;
+}
+
+.inventory-shortages-items {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.inventory-shortage-card {
+    min-width: 0;
+    padding: 16px;
+    border: 1px solid var(--border-color, #e2e8f0);
+    border-radius: 18px;
+    background: var(--surface, #fff);
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
+}
+
+.inventory-shortage-card.is-selected {
+    border-color: var(--primary, #2563eb);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.inventory-shortage-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.inventory-shortage-card-title {
+    min-width: 0;
+}
+
+.inventory-shortage-card-title h2 {
+    margin: 0;
+    font-size: 1.05rem;
+}
+
+.inventory-shortage-code {
+    display: block;
+    margin-top: 4px;
+    color: var(--text-muted, #64748b);
+    direction: ltr;
+    unicode-bidi: isolate;
+    font-family: Consolas, Monaco, monospace;
+    font-size: 0.78rem;
+}
+
+.inventory-shortage-select {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.inventory-shortage-select input {
+    width: 18px;
+    height: 18px;
+}
+
+.inventory-shortage-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-top: 12px;
+}
+
+.inventory-shortage-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 9px;
+    border-radius: 999px;
+    background: #f1f5f9;
+    color: #475569;
+    font-size: 0.76rem;
+    font-weight: 700;
+}
+
+.inventory-shortage-badge.is-warning {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.inventory-shortage-badge.is-danger {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.inventory-shortage-values {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 14px;
+}
+
+.inventory-shortage-value {
+    padding: 10px;
+    border-radius: 12px;
+    background: #f8fafc;
+    text-align: center;
+}
+
+.inventory-shortage-value span {
+    display: block;
+    color: var(--text-muted, #64748b);
+    font-size: 0.7rem;
+}
+
+.inventory-shortage-value strong {
+    display: block;
+    margin-top: 5px;
+    font-size: 0.95rem;
+}
+
+.inventory-shortage-details {
+    display: grid;
+    gap: 7px;
+    margin-top: 14px;
+    color: var(--text-muted, #64748b);
+    font-size: 0.84rem;
+}
+
+.inventory-shortage-card-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border-color, #e2e8f0);
+}
+
+.inventory-shortages-toast-container {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 13000;
+    width: min(380px, calc(100vw - 40px));
+}
+
+.inventory-shortages-toast {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 14px 16px;
+    border: 1px solid #fecaca;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 16px 40px rgba(15, 23, 42, 0.18);
+}
+
+.inventory-shortages-toast-message {
+    flex: 1;
+}
+
+.inventory-shortages-toast-close {
+    border: 0;
+    background: transparent;
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+@media (max-width: 1200px) {
+    .inventory-shortages-filters {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .inventory-shortages-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 850px) {
+    .inventory-shortages-items {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@media (max-width: 767px) {
+    .inventory-shortages-stats,
+    .inventory-shortages-filters {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .inventory-shortages-filter-actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .inventory-shortages-filter-actions .button {
+        width: 100%;
+    }
+
+    .inventory-shortages-toolbar,
+    .inventory-shortage-card-header,
+    .inventory-shortage-card-actions {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .inventory-shortage-values {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .inventory-shortage-card-actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .inventory-shortages-toast-container {
+        top: auto;
+        bottom: 85px;
+        left: 12px;
+        width: calc(100vw - 24px);
+    }
+}
