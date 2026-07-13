@@ -40,27 +40,7 @@ require_once __DIR__ . '/../../views/layouts/app-header.php';
             <p class="inventory-page-description">
                 ניהול פריטים, כמויות, קטגוריות, מיקומים וסטטוסי מלאי.
             </p>
-            <a
-    href="<?= escape(APP_URL) ?>/public/inventory/history.php"
-    class="button button-secondary"
->
-    <span aria-hidden="true">📋</span>
-    <span>היסטוריית תנועות</span>
-</a>
-<a
-    href="<?= escape(APP_URL) ?>/public/inventory/warehouses.php"
-    class="button button-secondary"
->
-    <span aria-hidden="true">🏭</span>
-    <span>מלאי לפי מחסן</span>
-</a>
-<a
-    href="<?= escape(APP_URL) ?>/public/inventory/shortages.php"
-    class="button button-secondary"
->
-    <span aria-hidden="true">⚠️</span>
-    <span>חוסרים והשלמות</span>
-</a>
+         
         </div>
 
         <?php if (isAdmin()): ?>

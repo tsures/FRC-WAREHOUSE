@@ -11,6 +11,39 @@ $activePage = $activePage ?? 'dashboard';
 
 $userFullName = currentUserFullName() ?? 'משתמש';
 $userRole = currentUserRole() ?? 'user';
+
+$currentPath = parse_url(
+    $_SERVER['REQUEST_URI'] ?? '',
+    PHP_URL_PATH
+);
+
+$currentPath = is_string($currentPath)
+    ? rtrim($currentPath, '/')
+    : '';
+
+$appBasePath = rtrim(APP_URL, '/');
+
+function sidebarPathIs(
+    string $currentPath,
+    string $expectedPath
+): bool {
+    return rtrim($currentPath, '/') === rtrim($expectedPath, '/');
+}
+
+function sidebarPathStartsWith(
+    string $currentPath,
+    string $expectedPath
+): bool {
+    $currentPath = rtrim($currentPath, '/');
+    $expectedPath = rtrim($expectedPath, '/');
+
+    return
+        $currentPath === $expectedPath ||
+        str_starts_with(
+            $currentPath,
+            $expectedPath . '/'
+        );
+}
 ?>
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
@@ -38,7 +71,7 @@ $userRole = currentUserRole() ?? 'user';
 
     <link
         rel="stylesheet"
-        href="<?= escape(APP_URL) ?>/assets/css/layout.css"
+        href="<?= escape(APP_URL) ?>/assets/css/layout.css?v=7"
     >
 </head>
 
@@ -73,23 +106,88 @@ $userRole = currentUserRole() ?? 'user';
         <nav class="sidebar-nav">
 
             <a
-                class="nav-item <?= $activePage === 'dashboard' ? 'active' : '' ?>"
+                class="nav-item <?= sidebarPathIs(
+                    $currentPath,
+                    $appBasePath . '/public'
+                ) ? 'active' : '' ?>"
                 href="<?= escape(APP_URL) ?>/public/"
             >
                 <span class="nav-icon">🏠</span>
                 <span class="nav-label">בית</span>
             </a>
 
+            <div class="nav-section-title">
+                מלאי
+            </div>
+
             <a
-                class="nav-item <?= $activePage === 'inventory' ? 'active' : '' ?>"
+                class="nav-item <?= (
+                    sidebarPathIs(
+                        $currentPath,
+                        $appBasePath . '/public/inventory'
+                    ) ||
+                    sidebarPathIs(
+                        $currentPath,
+                        $appBasePath . '/public/inventory/index.php'
+                    )
+                ) ? 'active' : '' ?>"
                 href="<?= escape(APP_URL) ?>/public/inventory/"
             >
                 <span class="nav-icon">📦</span>
-                <span class="nav-label">מלאי</span>
+                <span class="nav-label">כל המלאי</span>
             </a>
 
             <a
-                class="nav-item <?= $activePage === 'categories' ? 'active' : '' ?>"
+                class="nav-item <?= sidebarPathIs(
+                    $currentPath,
+                    $appBasePath . '/public/inventory/warehouses.php'
+                ) ? 'active' : '' ?>"
+                href="<?= escape(APP_URL) ?>/public/inventory/warehouses.php"
+            >
+                <span class="nav-icon">🏭</span>
+                <span class="nav-label">מלאי לפי מחסן</span>
+            </a>
+
+            <a
+                class="nav-item <?= sidebarPathIs(
+                    $currentPath,
+                    $appBasePath . '/public/inventory/shortages.php'
+                ) ? 'active' : '' ?>"
+                href="<?= escape(APP_URL) ?>/public/inventory/shortages.php"
+            >
+                <span class="nav-icon">⚠️</span>
+                <span class="nav-label">חוסרים והשלמות</span>
+            </a>
+
+            <a
+                class="nav-item <?= sidebarPathIs(
+                    $currentPath,
+                    $appBasePath . '/public/inventory/history.php'
+                ) ? 'active' : '' ?>"
+                href="<?= escape(APP_URL) ?>/public/inventory/history.php"
+            >
+                <span class="nav-icon">🧾</span>
+                <span class="nav-label">היסטוריית תנועות</span>
+            </a>
+            
+                <a class="nav-item <?= sidebarPathIs(
+                   $currentPath,
+                   $appBasePath . '/public/inventory/issue.php'
+            ) ? 'active' : '' ?>"
+            href="<?= escape(APP_URL) ?>/public/inventory/issue.php">
+            <span class="nav-icon">📤</span>
+            <span class="nav-label">הוצאת ומילוי ציוד</span>
+           </a>
+
+            <div class="nav-section-title">
+                נתונים
+            </div>
+        
+            <a
+                class="nav-item <?= sidebarPathStartsWith(
+                    $currentPath,
+                    $appBasePath . '/public/categories'
+                ) ? 'active' : '' ?>"
                 href="<?= escape(APP_URL) ?>/public/categories/"
             >
                 <span class="nav-icon">🗂️</span>
@@ -97,28 +195,16 @@ $userRole = currentUserRole() ?? 'user';
             </a>
 
             <a
-                class="nav-item <?= $activePage === 'locations' ? 'active' : '' ?>"
+                class="nav-item <?= sidebarPathStartsWith(
+                    $currentPath,
+                    $appBasePath . '/public/locations'
+                ) ? 'active' : '' ?>"
                 href="<?= escape(APP_URL) ?>/public/locations/"
             >
                 <span class="nav-icon">📍</span>
                 <span class="nav-label">מיקומים</span>
             </a>
-
-            <a
-                class="nav-item <?= $activePage === 'search' ? 'active' : '' ?>"
-                href="<?= escape(APP_URL) ?>/public/search.php"
-            >
-                <span class="nav-icon">🔍</span>
-                <span class="nav-label">חיפוש</span>
-            </a>
-
-            <a
-                class="nav-item <?= $activePage === 'reports' ? 'active' : '' ?>"
-                href="<?= escape(APP_URL) ?>/public/reports/"
-            >
-                <span class="nav-icon">📊</span>
-                <span class="nav-label">דוחות</span>
-            </a>
+         
 
             <?php if (isAdmin()): ?>
                 <div class="nav-section-title">
@@ -126,7 +212,16 @@ $userRole = currentUserRole() ?? 'user';
                 </div>
 
                 <a
-                    class="nav-item <?= $activePage === 'users' ? 'active' : '' ?>"
+                    class="nav-item <?= (
+                        sidebarPathIs(
+                            $currentPath,
+                            $appBasePath . '/public/users'
+                        ) ||
+                        sidebarPathIs(
+                            $currentPath,
+                            $appBasePath . '/public/users/index.php'
+                        )
+                    ) ? 'active' : '' ?>"
                     href="<?= escape(APP_URL) ?>/public/users/"
                 >
                     <span class="nav-icon">👥</span>
@@ -134,7 +229,21 @@ $userRole = currentUserRole() ?? 'user';
                 </a>
 
                 <a
-                    class="nav-item <?= $activePage === 'logs' ? 'active' : '' ?>"
+                    class="nav-item <?= sidebarPathIs(
+                        $currentPath,
+                        $appBasePath . '/public/users/login-attempts.php'
+                    ) ? 'active' : '' ?>"
+                    href="<?= escape(APP_URL) ?>/public/users/login-attempts.php"
+                >
+                    <span class="nav-icon">🔐</span>
+                    <span class="nav-label">היסטוריית התחברויות</span>
+                </a>
+
+                <a
+                    class="nav-item <?= sidebarPathStartsWith(
+                        $currentPath,
+                        $appBasePath . '/public/logs'
+                    ) ? 'active' : '' ?>"
                     href="<?= escape(APP_URL) ?>/public/logs/"
                 >
                     <span class="nav-icon">📝</span>
@@ -142,7 +251,10 @@ $userRole = currentUserRole() ?? 'user';
                 </a>
 
                 <a
-                    class="nav-item <?= $activePage === 'settings' ? 'active' : '' ?>"
+                    class="nav-item <?= sidebarPathStartsWith(
+                        $currentPath,
+                        $appBasePath . '/public/settings'
+                    ) ? 'active' : '' ?>"
                     href="<?= escape(APP_URL) ?>/public/settings/"
                 >
                     <span class="nav-icon">⚙️</span>
@@ -157,15 +269,18 @@ $userRole = currentUserRole() ?? 'user';
                 <?= escape(mb_substr($userFullName, 0, 1)) ?>
             </div>
 
-            <div class="user-details">
-                <strong><?= escape($userFullName) ?></strong>
-                <span>
-                    <?= $userRole === 'admin'
-                        ? 'מנהל מערכת'
-                        : 'משתמש'
-                    ?>
-                </span>
-            </div>
+         <a
+    href="<?= escape(APP_URL) ?>/public/profile.php"
+    class="user-details"
+>
+    <strong><?= escape($userFullName) ?></strong>
+    <span>
+        <?= $userRole === 'admin'
+            ? 'מנהל מערכת'
+            : 'משתמש'
+        ?>
+    </span>
+</a>
 
             <a
                 class="icon-button"
@@ -197,7 +312,7 @@ $userRole = currentUserRole() ?? 'user';
                     </h1>
 
                     <p class="page-subtitle">
-                        צוות FRC 3083
+                       ARTEMIS 3083 🏹
                     </p>
                 </div>
             </div>
@@ -211,14 +326,15 @@ $userRole = currentUserRole() ?? 'user';
                 >
                     🔔
                 </button>
-
-                <a
-                    class="button button-primary topbar-add-button"
-                    href="<?= escape(APP_URL) ?>/public/inventory/add.php"
-                >
-                    <span>＋</span>
-                    <span>הוספת פריט</span>
-                </a>
+                
+                 <a
+                class="icon-button"
+                href="<?= escape(APP_URL) ?>/public/logout.php"
+                aria-label="התנתקות"
+            >
+                🔚
+            </a>
+             
 
             </div>
 

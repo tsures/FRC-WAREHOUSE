@@ -1,0 +1,623 @@
+/* ==========================================================
+   Base / reset for this page only
+   ========================================================== */
+
+.inventory-movement-page,
+.inventory-movement-page * {
+    box-sizing: border-box;
+}
+
+.inventory-movement-page {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+}
+
+/* ==========================================================
+   Header
+   ========================================================== */
+
+.inventory-movement-header h1 {
+    margin: 0;
+    font-size: 2rem;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+}
+
+.inventory-movement-header p {
+    margin: 8px 0 0;
+    color: var(--text-muted, #64748b);
+}
+
+.inventory-movement-eyebrow {
+    margin: 0 0 6px;
+    color: var(--primary, #2563eb);
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+/* ==========================================================
+   Layout grid
+   ========================================================== */
+
+.inventory-movement-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    gap: 18px;
+    align-items: start;
+    width: 100%;
+    min-width: 0;
+}
+
+.inventory-movement-side {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    min-width: 0;
+}
+
+/* ==========================================================
+   Card
+   ========================================================== */
+
+.inventory-movement-card {
+    min-width: 0;
+    border: 1px solid var(--border-color, #e2e8f0);
+    border-radius: 18px;
+    background: var(--surface, #ffffff);
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
+    overflow: hidden;
+}
+
+.inventory-movement-card-header {
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--border-color, #e2e8f0);
+    background: #f8fafc;
+}
+
+.inventory-movement-card-header h2 {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.inventory-movement-card-header p {
+    margin: 5px 0 0;
+    color: var(--text-muted, #64748b);
+    font-size: 0.84rem;
+}
+
+/* ==========================================================
+   Form
+   ========================================================== */
+
+.inventory-movement-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px;
+    min-width: 0;
+}
+
+.inventory-movement-type-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.inventory-movement-type {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 15px;
+    border: 1px solid var(--border-color, #cbd5e1);
+    border-radius: 15px;
+    background: #ffffff;
+    cursor: pointer;
+}
+
+.inventory-movement-type.is-selected {
+    border-color: var(--primary, #2563eb);
+    background: #eff6ff;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.inventory-movement-type input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.inventory-movement-type-icon {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    border-radius: 12px;
+    background: #f1f5f9;
+    font-size: 1.2rem;
+}
+
+.inventory-movement-type > span:last-child {
+    min-width: 0;
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.inventory-movement-type strong,
+.inventory-movement-type small {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.inventory-movement-type small {
+    color: var(--text-muted, #64748b);
+}
+
+.inventory-movement-form .form-group {
+    position: relative;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.inventory-movement-form label {
+    color: var(--text-color, #0f172a);
+    font-weight: 700;
+}
+
+.inventory-movement-form input,
+.inventory-movement-form textarea {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    border: 1px solid var(--border-color, #cbd5e1);
+    border-radius: 12px;
+    background: #ffffff;
+    color: var(--text-color, #0f172a);
+    font: inherit;
+    outline: none;
+}
+
+.inventory-movement-form input {
+    height: 46px;
+    padding: 0 12px;
+}
+
+.inventory-movement-form textarea {
+    padding: 11px 12px;
+    resize: vertical;
+}
+
+.inventory-movement-form input:focus,
+.inventory-movement-form textarea:focus {
+    border-color: var(--primary, #2563eb);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.inventory-movement-form small {
+    color: var(--text-muted, #64748b);
+    font-size: 0.78rem;
+    overflow-wrap: anywhere;
+}
+
+.required-marker {
+    color: #dc2626;
+}
+
+/* ==========================================================
+   Item search
+   ========================================================== */
+
+.inventory-item-search-group,
+.inventory-item-search-wrapper {
+    position: relative;
+    min-width: 0;
+    width: 100%;
+}
+
+.inventory-item-search-wrapper input {
+    padding-left: 44px;
+}
+
+.inventory-item-search-wrapper .inventory-movement-small-spinner {
+    position: absolute;
+    top: 50%;
+    left: 14px;
+    transform: translateY(-50%);
+}
+
+.inventory-movement-search-results {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    left: 0;
+    z-index: 100;
+    max-height: 340px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    border: 1px solid var(--border-color, #cbd5e1);
+    border-radius: 14px;
+    background: #ffffff;
+    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.16);
+}
+
+.inventory-movement-search-results[hidden] {
+    display: none !important;
+}
+
+.inventory-search-result {
+    width: 100%;
+    min-width: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 12px;
+    padding: 12px 14px;
+    border: 0;
+    border-bottom: 1px solid #e2e8f0;
+    background: #ffffff;
+    color: inherit;
+    text-align: right;
+    cursor: pointer;
+}
+
+.inventory-search-result:last-child {
+    border-bottom: 0;
+}
+
+.inventory-search-result:hover,
+.inventory-search-result:focus {
+    background: #eff6ff;
+}
+
+.inventory-search-result-main {
+    min-width: 0;
+}
+
+.inventory-search-result-name {
+    display: block;
+    font-weight: 800;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.inventory-search-result-code {
+    display: block;
+    margin-top: 4px;
+    direction: ltr;
+    unicode-bidi: isolate;
+    color: var(--text-muted, #64748b);
+    font-family: Consolas, Monaco, monospace;
+    font-size: 0.78rem;
+    overflow-wrap: anywhere;
+    word-break: break-all;
+}
+
+.inventory-search-result-stock {
+    white-space: nowrap;
+    font-weight: 800;
+}
+
+.inventory-search-result-empty {
+    padding: 18px;
+    color: var(--text-muted, #64748b);
+    text-align: center;
+}
+
+/* ==========================================================
+   Selected item
+   ========================================================== */
+
+.inventory-selected-item {
+    min-width: 0;
+    padding: 16px;
+    border: 1px solid #bfdbfe;
+    border-radius: 16px;
+    background: #eff6ff;
+}
+
+.inventory-selected-item[hidden] {
+    display: none !important;
+}
+
+.inventory-selected-item-main {
+    min-width: 0;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+.inventory-selected-item-main > div {
+    min-width: 0;
+    flex: 1 1 auto;
+}
+
+.inventory-selected-item-label {
+    color: #1d4ed8;
+    font-size: 0.76rem;
+    font-weight: 700;
+}
+
+.inventory-selected-item h3 {
+    margin: 5px 0 0;
+    font-size: 1.15rem;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.inventory-selected-item-code {
+    display: block;
+    margin-top: 4px;
+    direction: ltr;
+    unicode-bidi: isolate;
+    color: #64748b;
+    font-family: Consolas, Monaco, monospace;
+    font-size: 0.8rem;
+    overflow-wrap: anywhere;
+    word-break: break-all;
+}
+
+.inventory-selected-item-data {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 9px;
+    margin-top: 15px;
+}
+
+.inventory-selected-item-data > div {
+    min-width: 0;
+    padding: 10px;
+    border-radius: 11px;
+    background: rgba(255, 255, 255, 0.8);
+}
+
+.inventory-selected-item-data span {
+    display: block;
+    color: #64748b;
+    font-size: 0.72rem;
+}
+
+.inventory-selected-item-data strong {
+    display: block;
+    margin-top: 4px;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+/* ==========================================================
+   Form grid / messages / actions
+   ========================================================== */
+
+.inventory-movement-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.inventory-movement-full {
+    grid-column: 1 / -1;
+}
+
+.inventory-movement-message {
+    padding: 13px 15px;
+    border-radius: 12px;
+    overflow-wrap: anywhere;
+}
+
+.inventory-movement-message.is-error {
+    border: 1px solid #fecaca;
+    background: #fef2f2;
+    color: #b91c1c;
+}
+
+.inventory-movement-message.is-success {
+    border: 1px solid #bbf7d0;
+    background: #f0fdf4;
+    color: #166534;
+}
+
+.inventory-movement-message[hidden] {
+    display: none !important;
+}
+
+.inventory-movement-actions {
+    display: flex;
+    justify-content: flex-start;
+    gap: 10px;
+}
+
+#saveInventoryMovementButton {
+    min-width: 150px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.inventory-movement-small-spinner {
+    width: 18px;
+    height: 18px;
+    display: inline-block;
+    border: 3px solid rgba(37, 99, 235, 0.18);
+    border-top-color: currentColor;
+    border-radius: 50%;
+    animation: inventory-movement-spin 0.75s linear infinite;
+}
+
+.inventory-movement-small-spinner[hidden] {
+    display: none !important;
+}
+
+@keyframes inventory-movement-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ==========================================================
+   Side cards
+   ========================================================== */
+
+.inventory-movement-rules {
+    display: grid;
+    gap: 12px;
+    margin: 0;
+    padding: 18px 38px 20px 20px;
+    color: #475569;
+    line-height: 1.55;
+    overflow-wrap: anywhere;
+}
+
+.inventory-last-action-content {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 18px 20px;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.inventory-last-action-content strong {
+    color: #166534;
+}
+
+.inventory-last-action-content span {
+    color: var(--text-muted, #64748b);
+}
+
+.inventory-last-action[hidden] {
+    display: none !important;
+}
+
+/* ==========================================================
+   Responsive breakpoints (single pass, no overrides-on-overrides)
+   ========================================================== */
+
+@media (max-width: 1400px) {
+    .inventory-movement-layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .inventory-movement-side {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 1000px) {
+    .inventory-movement-type-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .inventory-selected-item-data {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .inventory-movement-side {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@media (max-width: 767px) {
+    .inventory-movement-page {
+        gap: 16px;
+    }
+
+    .inventory-movement-header h1 {
+        font-size: 1.65rem;
+    }
+
+    .inventory-movement-card {
+        border-radius: 15px;
+    }
+
+    .inventory-movement-card-header {
+        padding: 15px;
+    }
+
+    .inventory-movement-form {
+        gap: 16px;
+        padding: 14px;
+    }
+
+    .inventory-movement-type {
+        padding: 12px;
+    }
+
+    .inventory-movement-type-icon {
+        width: 38px;
+        height: 38px;
+        min-width: 38px;
+    }
+
+    .inventory-movement-form-grid,
+    .inventory-selected-item-data {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .inventory-movement-full {
+        grid-column: auto;
+    }
+
+    .inventory-selected-item {
+        padding: 13px;
+    }
+
+    .inventory-selected-item-main {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    #changeInventoryMovementItem {
+        width: 100%;
+    }
+
+    .inventory-search-result {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .inventory-search-result-stock {
+        white-space: normal;
+    }
+
+    .inventory-movement-actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .inventory-movement-actions .button {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .inventory-movement-rules {
+        padding: 16px 34px 18px 16px;
+    }
+
+    /* Prevents iOS Safari from zooming in on focus (inputs < 16px trigger zoom) */
+    .inventory-movement-form input,
+    .inventory-movement-form textarea {
+        font-size: 16px;
+    }
+
+    /* Hide the explanatory rules card on phones to save space */
+    .inventory-movement-side > .inventory-movement-card:first-child {
+        display: none;
+    }
+}
+
+@media (max-width: 430px) {
+    .inventory-movement-actions {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}

@@ -84,6 +84,23 @@ function attemptLogin(
 
     $pdo = Database::getConnection();
 
+    if (isLoginIpRateLimited($pdo, getAuthClientIp())) {
+        logLoginAttempt(
+            $pdo,
+            null,
+            $username,
+            false,
+            'ip_rate_limit'
+        );
+
+        usleep(600000);
+
+        return [
+            'success' => false,
+            'message' => 'בוצעו יותר מדי ניסיונות התחברות. יש לנסות שוב מאוחר יותר.'
+        ];
+    }
+
     $statement = $pdo->prepare(
         "SELECT
             id,
@@ -92,7 +109,16 @@ function attemptLogin(
             full_name,
             role,
             is_active,
-            must_change_password
+            must_change_password,
+            failed_login_attempts,
+            last_failed_login_at,
+            locked_until,
+            CASE
+                WHEN locked_until IS NOT NULL
+                 AND locked_until > NOW()
+                THEN 1
+                ELSE 0
+            END AS is_locked
          FROM users
          WHERE username = :username
          LIMIT 1"
@@ -102,9 +128,48 @@ function attemptLogin(
         'username' => $username
     ]);
 
-    $user = $statement->fetch();
+    $user = $statement->fetch(PDO::FETCH_ASSOC);
 
-    if (!$user || !password_verify($password, $user['password_hash'])) {
+    if ($user && isUserLoginLocked($user)) {
+        logLoginAttempt(
+            $pdo,
+            (int) $user['id'],
+            $username,
+            false,
+            'locked'
+        );
+
+        return [
+            'success' => false,
+            'message' => getLockedLoginMessage(
+                (string) $user['locked_until']
+            )
+        ];
+    }
+
+    if (
+        !$user ||
+        !password_verify(
+            $password,
+            (string) $user['password_hash']
+        )
+    ) {
+        if ($user) {
+            registerFailedLogin(
+                $pdo,
+                (int) $user['id'],
+                (int) $user['failed_login_attempts']
+            );
+        }
+
+        logLoginAttempt(
+            $pdo,
+            $user ? (int) $user['id'] : null,
+            $username,
+            false,
+            'invalid_credentials'
+        );
+
         usleep(400000);
 
         return [
@@ -114,11 +179,24 @@ function attemptLogin(
     }
 
     if ((int) $user['is_active'] !== 1) {
+        logLoginAttempt(
+            $pdo,
+            (int) $user['id'],
+            $username,
+            false,
+            'inactive'
+        );
+
         return [
             'success' => false,
             'message' => 'המשתמש אינו פעיל. יש לפנות למנהל המערכת.'
         ];
     }
+
+    resetFailedLoginState(
+        $pdo,
+        (int) $user['id']
+    );
 
     loginUser($user);
 
@@ -135,6 +213,14 @@ function attemptLogin(
         'id' => $user['id']
     ]);
 
+    logLoginAttempt(
+        $pdo,
+        (int) $user['id'],
+        $username,
+        true,
+        null
+    );
+
     if ($rememberMe) {
         createRememberToken((int) $user['id']);
     }
@@ -148,6 +234,350 @@ function attemptLogin(
         'success' => true,
         'message' => 'התחברת בהצלחה.'
     ];
+}
+
+function getMaximumLoginAttempts(): int
+{
+    return defined('MAX_LOGIN_ATTEMPTS')
+        ? max(1, (int) MAX_LOGIN_ATTEMPTS)
+        : 5;
+}
+
+function getLoginLockMinutes(): int
+{
+    return defined('LOGIN_LOCK_MINUTES')
+        ? max(1, (int) LOGIN_LOCK_MINUTES)
+        : 15;
+}
+
+function isUserLoginLocked(array $user): bool
+{
+    if (array_key_exists('is_locked', $user)) {
+        return (int) $user['is_locked'] === 1;
+    }
+
+    $lockedUntil = $user['locked_until'] ?? null;
+
+    if (
+        !is_string($lockedUntil) ||
+        trim($lockedUntil) === ''
+    ) {
+        return false;
+    }
+
+    $pdo = Database::getConnection();
+
+    $statement = $pdo->prepare(
+        "SELECT
+            CASE
+                WHEN :locked_until > NOW()
+                THEN 1
+                ELSE 0
+            END"
+    );
+
+    $statement->execute([
+        'locked_until' => $lockedUntil
+    ]);
+
+    return (int) $statement->fetchColumn() === 1;
+}
+
+function getLockedLoginMessage(string $lockedUntil): string
+{
+    $timestamp = strtotime($lockedUntil);
+
+    if ($timestamp === false) {
+        return 'המשתמש נעול זמנית. יש לנסות שוב מאוחר יותר.';
+    }
+
+    return sprintf(
+        'המשתמש נעול זמנית עד %s.',
+        date('d/m/Y H:i', $timestamp)
+    );
+}
+
+function registerFailedLogin(
+    PDO $pdo,
+    int $userId,
+    int $currentAttempts
+): void {
+    $newAttempts = $currentAttempts + 1;
+    $maximumAttempts = getMaximumLoginAttempts();
+
+    if ($newAttempts >= $maximumAttempts) {
+        $lockMinutes = getLoginLockMinutes();
+
+        $statement = $pdo->prepare(
+            "UPDATE users
+             SET
+                failed_login_attempts = :attempts,
+                last_failed_login_at = NOW(),
+                locked_until = DATE_ADD(
+                    NOW(),
+                    INTERVAL {$lockMinutes} MINUTE
+                )
+             WHERE id = :id"
+        );
+
+        $statement->execute([
+            'attempts' => $newAttempts,
+            'id' => $userId
+        ]);
+
+        return;
+    }
+
+    $statement = $pdo->prepare(
+        "UPDATE users
+         SET
+            failed_login_attempts = :attempts,
+            last_failed_login_at = NOW(),
+            locked_until = NULL
+         WHERE id = :id"
+    );
+
+    $statement->execute([
+        'attempts' => $newAttempts,
+        'id' => $userId
+    ]);
+}
+
+function resetFailedLoginState(
+    PDO $pdo,
+    int $userId
+): void {
+    $statement = $pdo->prepare(
+        "UPDATE users
+         SET
+            failed_login_attempts = 0,
+            last_failed_login_at = NULL,
+            locked_until = NULL
+         WHERE id = :id"
+    );
+
+    $statement->execute([
+        'id' => $userId
+    ]);
+}
+
+function logLoginAttempt(
+    PDO $pdo,
+    ?int $userId,
+    string $username,
+    bool $wasSuccessful,
+    ?string $failureReason
+): void {
+    try {
+        $statement = $pdo->prepare(
+            "INSERT INTO login_attempts (
+                user_id,
+                username_attempted,
+                was_successful,
+                failure_reason,
+                ip_address,
+                user_agent
+            ) VALUES (
+                :user_id,
+                :username_attempted,
+                :was_successful,
+                :failure_reason,
+                :ip_address,
+                :user_agent
+            )"
+        );
+
+        if ($userId === null) {
+            $statement->bindValue(
+                ':user_id',
+                null,
+                PDO::PARAM_NULL
+            );
+        } else {
+            $statement->bindValue(
+                ':user_id',
+                $userId,
+                PDO::PARAM_INT
+            );
+        }
+
+        $statement->bindValue(
+            ':username_attempted',
+            mb_substr($username, 0, 80),
+            PDO::PARAM_STR
+        );
+
+        $statement->bindValue(
+            ':was_successful',
+            $wasSuccessful ? 1 : 0,
+            PDO::PARAM_INT
+        );
+
+        if ($failureReason === null) {
+            $statement->bindValue(
+                ':failure_reason',
+                null,
+                PDO::PARAM_NULL
+            );
+        } else {
+            $statement->bindValue(
+                ':failure_reason',
+                mb_substr($failureReason, 0, 100),
+                PDO::PARAM_STR
+            );
+        }
+
+        $statement->bindValue(
+            ':ip_address',
+            getAuthClientIp(),
+            PDO::PARAM_STR
+        );
+
+        $statement->bindValue(
+            ':user_agent',
+            mb_substr(
+                $_SERVER['HTTP_USER_AGENT'] ?? '',
+                0,
+                500
+            ),
+            PDO::PARAM_STR
+        );
+
+        $statement->execute();
+    } catch (Throwable $exception) {
+        error_log(
+            'Login attempt log error: ' .
+            $exception->getMessage()
+        );
+    }
+}
+
+
+function getLoginIpWindowMinutes(): int
+{
+    return defined('LOGIN_IP_WINDOW_MINUTES')
+        ? max(1, (int) LOGIN_IP_WINDOW_MINUTES)
+        : 10;
+}
+
+function getLoginIpMaximumAttempts(): int
+{
+    return defined('LOGIN_IP_MAX_ATTEMPTS')
+        ? max(1, (int) LOGIN_IP_MAX_ATTEMPTS)
+        : 20;
+}
+
+function isLoginIpRateLimited(
+    PDO $pdo,
+    string $ipAddress
+): bool {
+    $windowMinutes = getLoginIpWindowMinutes();
+    $maximumAttempts = getLoginIpMaximumAttempts();
+
+    $statement = $pdo->prepare(
+        "SELECT COUNT(*)
+         FROM login_attempts
+         WHERE ip_address = :ip_address
+           AND was_successful = 0
+           AND created_at >= DATE_SUB(
+                NOW(),
+                INTERVAL {$windowMinutes} MINUTE
+           )"
+    );
+
+    $statement->execute([
+        'ip_address' => $ipAddress
+    ]);
+
+    return (int) $statement->fetchColumn() >= $maximumAttempts;
+}
+
+function initializeLoginAntiBotState(): array
+{
+    $token = bin2hex(random_bytes(16));
+    $issuedAt = time();
+
+    $_SESSION['login_antibot'] = [
+        'token' => $token,
+        'issued_at' => $issuedAt
+    ];
+
+    return [
+        'token' => $token,
+        'issued_at' => $issuedAt
+    ];
+}
+
+function validateLoginAntiBotState(
+    ?string $token,
+    string $honeypot
+): array {
+    $state = $_SESSION['login_antibot'] ?? null;
+
+    unset($_SESSION['login_antibot']);
+
+    if ($honeypot !== '') {
+        return [
+            'success' => false,
+            'reason' => 'honeypot'
+        ];
+    }
+
+    if (
+        !is_array($state) ||
+        empty($state['token']) ||
+        empty($state['issued_at']) ||
+        $token === null ||
+        !hash_equals((string) $state['token'], $token)
+    ) {
+        return [
+            'success' => false,
+            'reason' => 'invalid_antibot_token'
+        ];
+    }
+
+    $elapsed = time() - (int) $state['issued_at'];
+
+    if ($elapsed < 2) {
+        return [
+            'success' => false,
+            'reason' => 'too_fast'
+        ];
+    }
+
+    if ($elapsed > 1800) {
+        return [
+            'success' => false,
+            'reason' => 'expired_antibot_token'
+        ];
+    }
+
+    return [
+        'success' => true,
+        'reason' => null
+    ];
+}
+
+function logRejectedLoginForm(
+    string $username,
+    string $reason
+): void {
+    try {
+        $pdo = Database::getConnection();
+
+        logLoginAttempt(
+            $pdo,
+            null,
+            $username,
+            false,
+            $reason
+        );
+    } catch (Throwable $exception) {
+        error_log(
+            'Rejected login form log error: ' .
+            $exception->getMessage()
+        );
+    }
 }
 
 function createRememberToken(int $userId): void
@@ -239,7 +669,14 @@ function restoreRememberedLogin(): void
             u.full_name,
             u.role,
             u.is_active,
-            u.must_change_password
+            u.must_change_password,
+            u.locked_until,
+            CASE
+                WHEN u.locked_until IS NOT NULL
+                 AND u.locked_until > NOW()
+                THEN 1
+                ELSE 0
+            END AS is_locked
          FROM remember_tokens rt
          INNER JOIN users u
             ON u.id = rt.user_id
@@ -260,7 +697,8 @@ function restoreRememberedLogin(): void
 
     if (
         strtotime($record['expires_at']) < time() ||
-        (int) $record['is_active'] !== 1
+        (int) $record['is_active'] !== 1 ||
+        isUserLoginLocked($record)
     ) {
         deleteRememberTokenBySelector($selector);
         clearRememberCookie();

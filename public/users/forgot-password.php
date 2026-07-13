@@ -88,39 +88,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         30
                     );
 
-                    $appUrl = rtrim(
-                        (string) APP_URL,
-                        '/'
-                    );
+                    $scheme = isHttpsRequest()
+                        ? 'https'
+                        : 'http';
 
-                    if (
-                        str_starts_with($appUrl, 'http://') ||
-                        str_starts_with($appUrl, 'https://')
-                    ) {
-                        $baseUrl = $appUrl;
-                    } else {
-                        $scheme = isHttpsRequest()
-                            ? 'https'
-                            : 'http';
+                    $host = $_SERVER['HTTP_HOST'] ?? '';
 
-                        $host = $_SERVER['HTTP_HOST'] ?? '';
-
-                        if ($host === '') {
-                            throw new RuntimeException(
-                                'לא ניתן לזהות את כתובת האתר.'
-                            );
-                        }
-
-                        $baseUrl =
-                            $scheme .
-                            '://' .
-                            $host .
-                            '/' .
-                            ltrim($appUrl, '/');
+                    if ($host === '') {
+                        throw new RuntimeException(
+                            'לא ניתן לזהות את כתובת האתר.'
+                        );
                     }
 
                     $resetUrl =
-                        $baseUrl .
+                        $scheme .
+                        '://' .
+                        $host .
+                        rtrim(APP_URL, '/') .
                         '/public/reset-password.php?token=' .
                         urlencode($token);
 

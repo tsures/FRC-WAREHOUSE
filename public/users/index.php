@@ -38,6 +38,13 @@ require_once __DIR__ . '/../../views/layouts/app-header.php';
             <span aria-hidden="true">＋</span>
             <span>הוספת משתמש</span>
         </button>
+        <a
+    href="<?= escape(APP_URL) ?>/public/users/login-attempts.php"
+    class="button button-secondary"
+>
+    <span aria-hidden="true">🔐</span>
+    <span>היסטוריית התחברויות</span>
+</a>
     </div>
 
     <section class="users-filters">

@@ -14,6 +14,12 @@ requireGuest();
 $error = '';
 $username = '';
 
+$antiBotState = $_SESSION['login_antibot'] ?? null;
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    $antiBotState = initializeLoginAntiBotState();
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $csrfToken = $_POST['csrf_token'] ?? null;
 
@@ -34,12 +40,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             isset($_POST['remember_me']) &&
             $_POST['remember_me'] === '1';
 
-        try {
-            $result = attemptLogin(
+        $antiBotResult = validateLoginAntiBotState(
+            isset($_POST['login_form_token'])
+                ? (string) $_POST['login_form_token']
+                : null,
+            trim((string) ($_POST['website'] ?? ''))
+        );
+
+        if (!$antiBotResult['success']) {
+            logRejectedLoginForm(
                 $username,
-                $password,
-                $rememberMe
+                (string) $antiBotResult['reason']
             );
+
+            usleep(500000);
+
+            $error = 'לא ניתן להשלים את ההתחברות. יש לרענן את הדף ולנסות שוב.';
+            $antiBotState = initializeLoginAntiBotState();
+        } else {
+            try {
+                $result = attemptLogin(
+                    $username,
+                    $password,
+                    $rememberMe
+                );
 
             if ($result['success']) {
                 $returnUrl = $_SESSION['return_url'] ?? null;
@@ -56,11 +80,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 redirect(APP_URL . '/public/');
             }
 
-            $error = $result['message'];
-        } catch (Throwable $exception) {
-            error_log($exception->getMessage());
+                $error = $result['message'];
+                $antiBotState = initializeLoginAntiBotState();
+            } catch (Throwable $exception) {
+                error_log($exception->getMessage());
 
-            $error = 'אירעה שגיאה בהתחברות. נסה שוב.';
+                $error = 'אירעה שגיאה בהתחברות. נסה שוב.';
+                $antiBotState = initializeLoginAntiBotState();
+            }
         }
     }
 }
@@ -93,6 +120,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         rel="stylesheet"
         href="<?= escape(APP_URL) ?>/assets/css/login.css"
     >
+
+    <style>
+        .login-honeypot {
+            position: absolute !important;
+            left: -10000px !important;
+            top: auto !important;
+            width: 1px !important;
+            height: 1px !important;
+            overflow: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+    </style>
 </head>
 
 <body>
@@ -137,6 +177,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 autocomplete="on"
             >
                 <?= csrfInput() ?>
+
+                <input
+                    type="hidden"
+                    name="login_form_token"
+                    value="<?= escape((string) ($antiBotState['token'] ?? '')) ?>"
+                >
+
+                <div
+                    class="login-honeypot"
+                    aria-hidden="true"
+                >
+                    <label for="website">
+                        Website
+                    </label>
+
+                    <input
+                        id="website"
+                        name="website"
+                        type="text"
+                        tabindex="-1"
+                        autocomplete="off"
+                    >
+                </div>
 
                 <div class="form-field">
                     <label

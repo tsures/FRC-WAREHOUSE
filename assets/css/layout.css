@@ -14,6 +14,24 @@ body {
     display: flex;
 }
 
+.app-shell {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: hidden;
+}
+
+.app-main {
+    min-width: 0;
+    max-width: 100%;
+}
+
+.content-area {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+}
+
 .sidebar {
     width: var(--sidebar-width);
     height: 100vh;
@@ -496,8 +514,12 @@ body.sidebar-is-collapsed .app-main {
 
     .app-main,
     body.sidebar-is-collapsed .app-main {
-        width: 100%;
+        width: 100vw;
+        max-width: 100vw;
+        min-width: 0;
         margin-right: 0;
+        margin-left: 0;
+        overflow-x: hidden;
     }
 
     .topbar {
@@ -518,10 +540,28 @@ body.sidebar-is-collapsed .app-main {
     }
 
     .content-area {
-        padding: 18px 14px calc(var(--mobile-nav-height) + 28px);
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        padding:
+            18px
+            14px
+            calc(var(--mobile-nav-height) + 28px);
+        overflow-x: hidden;
     }
 
-    .mobile-bottom-nav {
+    /* ==================================================
+       THE ACTUAL FIX:
+       repeat(5, 1fr) alone does NOT let a column shrink
+       below its content's natural width (grid items default
+       to min-width: auto). The nav label "הוצאה/מילוי" has
+       no breakable space, so it was forcing its column - and
+       therefore the whole nav bar - wider than the viewport.
+       minmax(0, 1fr) explicitly allows the column to shrink,
+       and overflow-wrap/word-break let the label wrap instead
+       of forcing extra width.
+       ================================================== */
+.mobile-bottom-nav {
         min-height: var(--mobile-nav-height);
         padding:
             8px
@@ -536,7 +576,7 @@ body.sidebar-is-collapsed .app-main {
         z-index: 800;
 
         display: grid;
-        grid-template-columns: repeat(5, 1fr);
+        grid-template-columns: repeat(5, minmax(0, 1fr));
         align-items: end;
 
         border-top: 1px solid var(--border);
@@ -547,6 +587,7 @@ body.sidebar-is-collapsed .app-main {
 
     .mobile-bottom-nav > a {
         min-height: 50px;
+        min-width: 0;
 
         display: flex;
         flex-direction: column;
@@ -557,12 +598,15 @@ body.sidebar-is-collapsed .app-main {
         color: var(--text-muted);
         font-size: 1.15rem;
     }
-
     .mobile-bottom-nav > a.active {
         color: var(--primary);
     }
 
     .mobile-bottom-nav small {
+        max-width: 100%;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+        text-align: center;
         font-size: 0.67rem;
         font-weight: 700;
     }
