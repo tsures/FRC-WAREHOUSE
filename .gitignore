@@ -1,0 +1,32 @@
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+includes/config.php
+
+# User uploads and runtime data
+storage/uploads/*
+!storage/uploads/.htaccess
+storage/logs/
+*.log
+
+# Database exports and backups
+*.bak
+*.dump
+*.sql.gz
+database/*.local.sql
+
+# Editor and operating-system files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.swp
+*~
+
+# Dependency directories if introduced later
+vendor/
+node_modules/
