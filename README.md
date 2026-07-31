@@ -1,6 +1,6 @@
 # FRC Warehouse Management System
 
-## This project is dedicated with lots of love to frc team "ARTEMIS 3083" which i was proud to be their mentor, love you guys tsures
+## This project is dedicated with lots of love to frc team "ARTEMIS 3083" which i was proud to be their mentor, love you guys, tsures
 A responsive Hebrew RTL warehouse-management application for tracking inventory, locations, categories, suppliers, stock movements, users, notifications, and audit activity.
 
 ## Requirements
